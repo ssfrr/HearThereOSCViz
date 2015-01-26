@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxOsc.h"
 
 class ahrsDemoApp : public ofBaseApp{
 	public:
@@ -17,4 +18,8 @@ class ahrsDemoApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+
+    private:
+            ofQuaternion orientation;
+            ofxOscReceiver oscReceiver;
 };
