@@ -21,5 +21,9 @@ class ahrsDemoApp : public ofBaseApp{
 
     private:
             ofQuaternion orientation;
+            ofQuaternion correction;
             ofxOscReceiver oscReceiver;
+            ofCamera cam;
+            ofLight light1;
+            ofLight light2;
 };

@@ -4,6 +4,14 @@
 void ahrsDemoApp::setup(){
     cout << "Listening for OSC on port 10001\n";
     oscReceiver.setup(10001);
+    cam.setPosition(ofVec3f(0, 0, 40));
+    light1.setPosition(ofVec3f(3, 3, 40));
+    light1.setPointLight();
+    light2.setPosition(ofVec3f(-10, -2, 20));
+    light2.setPointLight();
+    ofBackground(15,15,15);
+    ofSetDepthTest(true);
+    //cam.lookAt(0, 0, 0);
 }
 
 //--------------------------------------------------------------
@@ -21,7 +29,7 @@ void ahrsDemoApp::update(){
             float y = m.getArgAsFloat(2);
             float z = m.getArgAsFloat(3);
             orientation = ofQuaternion(x, y, z, w);
-            cout << w << ", " << x << ", " << y << ", " << z << endl;
+            //cout << w << ", " << x << ", " << y << ", " << z << endl;
         }
         else{
             // unrecognized message: display on the bottom of the screen
@@ -54,19 +62,58 @@ void ahrsDemoApp::update(){
 
 //--------------------------------------------------------------
 void ahrsDemoApp::draw(){
-    float w;
-    ofVec3f xyz;
+    float w_sensor;
+    ofVec3f xyz_sensor;
+    float w_correction;
+    ofVec3f xyz_correction;
 
-    orientation.getRotate(w, xyz);
-    ofBackgroundGradient(ofColor(15, 15, 15), ofColor(5, 5, 5), OF_GRADIENT_LINEAR);
-    ofTranslate(ofGetWindowWidth()/2, ofGetWindowHeight()/2, 0);
-    ofRotate(w, xyz.x, xyz.y, xyz.z);
-    ofDrawAxis(200);
+    cam.begin();
+    // switch to left-handed coordinates
+    ofScale(1, 1, -1);
+    ofVec3f forward = ofVec3f(0, 0, 20);
+    orientation.getRotate(w_sensor, xyz_sensor);
+    correction.getRotate(w_correction, xyz_correction);
+
+    // apply the head-tracking rotation
+    forward = forward.rotate(w_sensor, xyz_sensor);
+    forward = forward.rotate(w_correction, xyz_correction);
+    forward = forward.rotate(90, ofVec3f(0, 0, 1));
+
+    // rotate so Z is pointing up
+    //ofRotate(90, 1, 0, 0);
+    //ofRotate(w, xyz.x, xyz.y, xyz.z);
+    //ofDrawAxis(200);
+    //ofSetColor(255, 0, 0);
+    //ofDrawBox(ofVec3f(102, 1, 1), 200, 10, 10);
+    //ofSetColor(0, 255, 0);
+    //ofDrawBox(ofVec3f(1, 102, 1), 10, 200, 10);
+    //ofSetColor(0, 0, 255);
+    //ofDrawBox(ofVec3f(1, 1, 102), 10, 10, 200);
+    ofEnableLighting();
+    light1.enable();
+    light2.enable();
+    ofSetLineWidth(2);
+    ofSetColor(0, 0, 255);
+    ofDrawArrow(ofVec3f(0, 0, 0), forward, 3);
+    cam.end();
 }
 
-//--------------------------------------------------------------
-void ahrsDemoApp::keyPressed(int key){
 
+//--------------------------------------------------------------
+void ahrsDemoApp::keyPressed(int key) {
+    if(key == 'r') {
+        cout << "RECALIBRATE" << endl;
+        float w_sensor;
+        ofVec3f xyz_sensor;
+        orientation.getRotate(w_sensor, xyz_sensor);
+        correction = orientation.inverse();
+    }
+    else {
+        cout << "UNRECOGNIZED KEY: " << key << endl;
+    }
+    cout << "======================================================\n";
+    cout << "======================================================\n";
+    cout << "======================================================\n";
 }
 
 //--------------------------------------------------------------
