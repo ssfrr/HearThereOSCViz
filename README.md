@@ -1,5 +1,5 @@
-ahrsDemo
-========
+HearThereOSCViz
+===============
 
 This is a simple AHRS visualization that receives quaternions over OSC and
 visualizes the orientation by drawing a set of axes.
