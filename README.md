@@ -22,6 +22,8 @@ Building
 This makefile expects the project to be located in `${OF_ROOT}/apps/myApps`, or
 at least that it is 2 levels below the OpenFrameworks root directory. You can
 also just set the variable `OF_ROOT` to point to your OpenFrameworks directory.
+You can set `OF_ROOT` in a file called `config.make` and it will override the
+default and is ignored from git tracking.
 
 Then you should be able to build just by typing `make`. `make run` will run the
 compiled application, and open a window with some axes on it.
