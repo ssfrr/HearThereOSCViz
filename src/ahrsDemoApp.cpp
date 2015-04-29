@@ -4,13 +4,16 @@
 void ahrsDemoApp::setup(){
     cout << "Listening for OSC on port 10001\n";
     oscReceiver.setup(10001);
-    cam.setPosition(ofVec3f(0, 0, 40));
+    cam.setPosition(ofVec3f(0, 0, 9));
+    cam.setNearClip(0);
     light1.setPosition(ofVec3f(3, 3, 40));
     light1.setPointLight();
     light2.setPosition(ofVec3f(-10, -2, 20));
     light2.setPointLight();
     ofBackground(15,15,15);
     ofSetDepthTest(true);
+    remoteForward = ofVec3f(0, 0, 0);
+    remoteUp = ofVec3f(0, 0, 0);
     //cam.lookAt(0, 0, 0);
 }
 
@@ -23,12 +26,25 @@ void ahrsDemoApp::update(){
 
         // check for mouse moved message
         if(m.getAddress() == "/orientation"){
-            // both the arguments are int32's
             float w = m.getArgAsFloat(0);
             float x = m.getArgAsFloat(1);
             float y = m.getArgAsFloat(2);
             float z = m.getArgAsFloat(3);
             orientation = ofQuaternion(x, y, z, w);
+            //cout << w << ", " << x << ", " << y << ", " << z << endl;
+        }
+        else if(m.getAddress() == "/forward"){
+            float x = m.getArgAsFloat(0);
+            float y = m.getArgAsFloat(1);
+            float z = m.getArgAsFloat(2);
+            remoteForward = ofVec3f(x, y, z);
+            //cout << w << ", " << x << ", " << y << ", " << z << endl;
+        }
+        else if(m.getAddress() == "/up"){
+            float x = m.getArgAsFloat(0);
+            float y = m.getArgAsFloat(1);
+            float z = m.getArgAsFloat(2);
+            remoteUp = ofVec3f(x, y, z);
             //cout << w << ", " << x << ", " << y << ", " << z << endl;
         }
         else{
@@ -70,14 +86,14 @@ void ahrsDemoApp::draw(){
     cam.begin();
     // switch to left-handed coordinates
     ofScale(1, 1, -1);
-    ofVec3f forward = ofVec3f(0, 0, 20);
+    ofVec3f forward = ofVec3f(0, 0, 1);
     orientation.getRotate(w_sensor, xyz_sensor);
-    correction.getRotate(w_correction, xyz_correction);
+    //correction.getRotate(w_correction, xyz_correction);
 
     // apply the head-tracking rotation
     forward = forward.rotate(w_sensor, xyz_sensor);
-    forward = forward.rotate(w_correction, xyz_correction);
-    forward = forward.rotate(90, ofVec3f(0, 0, 1));
+    //forward = forward.rotate(w_correction, xyz_correction);
+    //forward = forward.rotate(90, ofVec3f(0, 0, 1));
 
     // rotate so Z is pointing up
     //ofRotate(90, 1, 0, 0);
@@ -93,8 +109,14 @@ void ahrsDemoApp::draw(){
     light1.enable();
     light2.enable();
     ofSetLineWidth(2);
-    ofSetColor(0, 0, 255);
-    ofDrawArrow(ofVec3f(0, 0, 0), forward, 3);
+    ofSetColor(255, 0, 0);
+    ofDrawArrow(ofVec3f(0, 0, 0), forward, 0.2);
+    if(remoteForward.length() > 0.01) {
+        ofSetColor(0, 255, 0);
+        ofDrawArrow(ofVec3f(0, 0, 0), remoteForward, 0.2);
+        ofSetColor(0, 100, 100);
+        ofDrawArrow(ofVec3f(0, 0, 0), remoteUp, 0.1);
+    }
     cam.end();
 }
 

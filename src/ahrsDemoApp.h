@@ -20,6 +20,8 @@ class ahrsDemoApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
     private:
+            ofVec3f remoteForward;
+            ofVec3f remoteUp;
             ofQuaternion orientation;
             ofQuaternion correction;
             ofxOscReceiver oscReceiver;
