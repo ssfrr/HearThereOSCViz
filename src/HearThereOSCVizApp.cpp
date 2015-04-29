@@ -12,6 +12,7 @@ void HearThereOSCVizApp::setup(){
     light2.setPointLight();
     ofBackground(15,15,15);
     ofSetDepthTest(true);
+    ofEnableAlphaBlending();
     remoteForward = ofVec3f(0, 0, 0);
     remoteUp = ofVec3f(0, 0, 0);
     //cam.lookAt(0, 0, 0);
@@ -86,6 +87,15 @@ void HearThereOSCVizApp::draw(){
     cam.begin();
     // switch to left-handed coordinates
     ofScale(1, 1, -1);
+
+    if(displayAxes) {
+        ofSetColor(255, 0, 0, 64);
+        ofDrawBox(ofVec3f(0.5, 0, 0), 1, 0.1, 0.1);
+        ofSetColor(0, 255, 0, 64);
+        ofDrawBox(ofVec3f(0, 0.5, 0), 0.1, 1, 0.1);
+        ofSetColor(0, 0, 255, 64);
+        ofDrawBox(ofVec3f(0, 0, 0.5), 0.1, 0.1, 1);
+    }
     ofVec3f forward = ofVec3f(0, 0, 1);
     orientation.getRotate(w_sensor, xyz_sensor);
     //correction.getRotate(w_correction, xyz_correction);
@@ -123,19 +133,19 @@ void HearThereOSCVizApp::draw(){
 
 //--------------------------------------------------------------
 void HearThereOSCVizApp::keyPressed(int key) {
-    if(key == 'r') {
+    if(key == ' ') {
         cout << "RECALIBRATE" << endl;
         float w_sensor;
         ofVec3f xyz_sensor;
         orientation.getRotate(w_sensor, xyz_sensor);
         correction = orientation.inverse();
     }
+    else if(key == 'a') {
+        displayAxes = !displayAxes;
+    }
     else {
         cout << "UNRECOGNIZED KEY: " << key << endl;
     }
-    cout << "======================================================\n";
-    cout << "======================================================\n";
-    cout << "======================================================\n";
 }
 
 //--------------------------------------------------------------

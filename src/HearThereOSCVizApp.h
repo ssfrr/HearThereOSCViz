@@ -28,4 +28,8 @@ class HearThereOSCVizApp : public ofBaseApp{
         ofCamera cam;
         ofLight light1;
         ofLight light2;
+        bool displayAxes;
+        bool displayRaw;
+        bool displayRemoteCooked;
+        bool displayLocalCooked;
 };
