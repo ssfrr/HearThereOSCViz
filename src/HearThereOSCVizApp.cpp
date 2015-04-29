@@ -1,7 +1,7 @@
-#include "ahrsDemoApp.h"
+#include "HearThereOSCVizApp.h"
 
 //--------------------------------------------------------------
-void ahrsDemoApp::setup(){
+void HearThereOSCVizApp::setup(){
     cout << "Listening for OSC on port 10001\n";
     oscReceiver.setup(10001);
     cam.setPosition(ofVec3f(0, 0, 9));
@@ -18,7 +18,7 @@ void ahrsDemoApp::setup(){
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::update(){
+void HearThereOSCVizApp::update(){
     while(oscReceiver.hasWaitingMessages()){
         // get the next message
         ofxOscMessage m;
@@ -77,7 +77,7 @@ void ahrsDemoApp::update(){
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::draw(){
+void HearThereOSCVizApp::draw(){
     float w_sensor;
     ofVec3f xyz_sensor;
     float w_correction;
@@ -122,7 +122,7 @@ void ahrsDemoApp::draw(){
 
 
 //--------------------------------------------------------------
-void ahrsDemoApp::keyPressed(int key) {
+void HearThereOSCVizApp::keyPressed(int key) {
     if(key == 'r') {
         cout << "RECALIBRATE" << endl;
         float w_sensor;
@@ -139,41 +139,41 @@ void ahrsDemoApp::keyPressed(int key) {
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::keyReleased(int key){
+void HearThereOSCVizApp::keyReleased(int key){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::mouseMoved(int x, int y){
+void HearThereOSCVizApp::mouseMoved(int x, int y){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::mouseDragged(int x, int y, int button){
+void HearThereOSCVizApp::mouseDragged(int x, int y, int button){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::mousePressed(int x, int y, int button){
+void HearThereOSCVizApp::mousePressed(int x, int y, int button){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::mouseReleased(int x, int y, int button){
+void HearThereOSCVizApp::mouseReleased(int x, int y, int button){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::windowResized(int w, int h){
+void HearThereOSCVizApp::windowResized(int w, int h){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::gotMessage(ofMessage msg){
+void HearThereOSCVizApp::gotMessage(ofMessage msg){
 
 }
 
 //--------------------------------------------------------------
-void ahrsDemoApp::dragEvent(ofDragInfo dragInfo){ 
+void HearThereOSCVizApp::dragEvent(ofDragInfo dragInfo){ 
 
 }
