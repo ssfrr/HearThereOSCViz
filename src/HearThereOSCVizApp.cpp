@@ -1,21 +1,51 @@
 #include "HearThereOSCVizApp.h"
 
+// account for the fact that the sensor's global frame has east=x, up=z, north=y
+const ofMatrix4x4 HearThereOSCVizApp::worldTransform = ofMatrix4x4(
+        1, 0, 0, 0,
+        0, 0, 1, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 1);
+
+// account for the body rotation because of how the board is physically oriented.
+// We want forward=-z, up=-x, right=y
+// Note that this is a pure rotation with no axes swaps
+const ofMatrix4x4 HearThereOSCVizApp::bodyTransform = ofMatrix4x4(
+         0,  1,  0,  0,
+        -1,  0,  0,  0,
+         0,  0, -1,  0,
+         0,  0,  0,  1);
+
 //--------------------------------------------------------------
 void HearThereOSCVizApp::setup(){
     cout << "Listening for OSC on port 10001\n";
     oscReceiver.setup(10001);
     cam.setPosition(ofVec3f(0, 0, 9));
-    cam.setNearClip(0);
-    light1.setPosition(ofVec3f(3, 3, 40));
-    light1.setPointLight();
-    light2.setPosition(ofVec3f(-10, -2, 20));
-    light2.setPointLight();
-    ofBackground(15,15,15);
-    ofSetDepthTest(true);
-    ofEnableAlphaBlending();
+    cam.setDistance(3);
+    cam.setTarget(ofVec3f(0, 0, 0));
+    cam.setNearClip(0.1);
+    int i = 0;
+    for(int x = -2; x <= 2; x += 4) {
+        for(int y = -2; x <= 2; x += 4) {
+            for(int z = -2; x <= 2; x += 4) {
+                lights[i].setPointLight();
+                lights[i].setPosition(ofVec3f(x, y, z));
+                lights[i].setPointLight();
+                lights[i].setDiffuseColor(ofColor(255, 255, 255));
+                lights[i].enable();
+                ++i;
+            }
+        }
+    }
+    ofBackground(150,150,150);
     remoteForward = ofVec3f(0, 0, 0);
     remoteUp = ofVec3f(0, 0, 0);
     //cam.lookAt(0, 0, 0);
+
+    displayAxes = true;
+    displayRaw = false;
+    displayRemoteCooked = false;
+    displayLocalCooked = true;
 }
 
 //--------------------------------------------------------------
@@ -39,14 +69,14 @@ void HearThereOSCVizApp::update(){
             float y = m.getArgAsFloat(1);
             float z = m.getArgAsFloat(2);
             remoteForward = ofVec3f(x, y, z);
-            //cout << w << ", " << x << ", " << y << ", " << z << endl;
+            displayRemoteCooked = true;
         }
         else if(m.getAddress() == "/up"){
             float x = m.getArgAsFloat(0);
             float y = m.getArgAsFloat(1);
             float z = m.getArgAsFloat(2);
             remoteUp = ofVec3f(x, y, z);
-            //cout << w << ", " << x << ", " << y << ", " << z << endl;
+            displayRemoteCooked = true;
         }
         else{
             // unrecognized message: display on the bottom of the screen
@@ -79,52 +109,62 @@ void HearThereOSCVizApp::update(){
 
 //--------------------------------------------------------------
 void HearThereOSCVizApp::draw(){
-    float w_sensor;
-    ofVec3f xyz_sensor;
-    float w_correction;
-    ofVec3f xyz_correction;
-
     cam.begin();
+    ofSetDepthTest(true);
+    //ofEnableAlphaBlending();
+    ofEnableLighting();
     // switch to left-handed coordinates
     ofScale(1, 1, -1);
+    ofSetLineWidth(5);
 
     if(displayAxes) {
-        ofSetColor(255, 0, 0, 64);
-        ofDrawBox(ofVec3f(0.5, 0, 0), 1, 0.1, 0.1);
-        ofSetColor(0, 255, 0, 64);
-        ofDrawBox(ofVec3f(0, 0.5, 0), 0.1, 1, 0.1);
-        ofSetColor(0, 0, 255, 64);
-        ofDrawBox(ofVec3f(0, 0, 0.5), 0.1, 0.1, 1);
+        ofSetColor(255, 0, 0, axisAlpha);
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(1, 0, 0));
+        ofSetColor(0, 255, 0, axisAlpha);
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 1, 0));
+        ofSetColor(0, 0, 255, axisAlpha);
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 0, 1));
     }
-    ofVec3f forward = ofVec3f(0, 0, 1);
-    orientation.getRotate(w_sensor, xyz_sensor);
-    //correction.getRotate(w_correction, xyz_correction);
+    if(displayRaw) {
+        float w;
+        ofVec3f xyz;
 
-    // apply the head-tracking rotation
-    forward = forward.rotate(w_sensor, xyz_sensor);
-    //forward = forward.rotate(w_correction, xyz_correction);
-    //forward = forward.rotate(90, ofVec3f(0, 0, 1));
+        ofPushMatrix();
+        orientation.getRotate(w, xyz);
+        ofRotate(w, xyz.x, xyz.y, xyz.z);
+        ofSetColor(255, 255, 0, axisAlpha);
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 0, 0.75));
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 0.25, 0));
+        ofPopMatrix();
+    }
+    if(displayLocalCooked) {
+        float w_sensor;
+        ofVec3f xyz_sensor;
+        float w_correction;
+        ofVec3f xyz_correction;
+        orientation.getRotate(w_sensor, xyz_sensor);
+        correction.getRotate(w_correction, xyz_correction);
 
-    // rotate so Z is pointing up
-    //ofRotate(90, 1, 0, 0);
-    //ofRotate(w, xyz.x, xyz.y, xyz.z);
-    //ofDrawAxis(200);
-    //ofSetColor(255, 0, 0);
-    //ofDrawBox(ofVec3f(102, 1, 1), 200, 10, 10);
-    //ofSetColor(0, 255, 0);
-    //ofDrawBox(ofVec3f(1, 102, 1), 10, 200, 10);
-    //ofSetColor(0, 0, 255);
-    //ofDrawBox(ofVec3f(1, 1, 102), 10, 10, 200);
-    ofEnableLighting();
-    light1.enable();
-    light2.enable();
-    ofSetLineWidth(2);
-    ofSetColor(255, 0, 0);
-    ofDrawArrow(ofVec3f(0, 0, 0), forward, 0.2);
-    if(remoteForward.length() > 0.01) {
-        ofSetColor(0, 255, 0);
-        ofDrawArrow(ofVec3f(0, 0, 0), remoteForward, 0.2);
-        ofSetColor(0, 100, 100);
+        ofPushMatrix();
+        // Correct for the world coordinate system that the algorithm uses
+        ofMultMatrix(worldTransform);
+
+        //ofRotate(90, 1, 0, 0);
+        ofRotate(w_sensor, xyz_sensor.x, xyz_sensor.y, xyz_sensor.z);
+        ofRotate(w_correction, xyz_correction.x, xyz_correction.y, xyz_correction.z);
+        //ofMultMatrix(bodyTransform);
+        ofSetColor(0, 255, 255, axisAlpha);
+        // draw forward vector (in body frame)
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(0, 0, -0.75));
+        // draw up vector (in body frame)
+        ofDrawArrow(ofVec3f(0, 0, 0), ofVec3f(-0.25, 0, 0));
+        ofPopMatrix();
+    }
+    if(displayRemoteCooked) {
+        ofVec3f forward = remoteForward / remoteForward.length() * 0.75;
+        ofVec3f up = remoteUp / remoteUp.length() * 0.25;
+        ofSetColor(0, 255, 255, axisAlpha);
+        ofDrawArrow(ofVec3f(0, 0, 0), remoteForward);
         ofDrawArrow(ofVec3f(0, 0, 0), remoteUp, 0.1);
     }
     cam.end();
@@ -135,13 +175,16 @@ void HearThereOSCVizApp::draw(){
 void HearThereOSCVizApp::keyPressed(int key) {
     if(key == ' ') {
         cout << "RECALIBRATE" << endl;
-        float w_sensor;
-        ofVec3f xyz_sensor;
-        orientation.getRotate(w_sensor, xyz_sensor);
         correction = orientation.inverse();
     }
     else if(key == 'a') {
         displayAxes = !displayAxes;
+    }
+    else if(key == 'l') {
+        displayLocalCooked = !displayLocalCooked;
+    }
+    else if(key == 'r') {
+        displayRaw = !displayRaw;
     }
     else {
         cout << "UNRECOGNIZED KEY: " << key << endl;

@@ -25,11 +25,14 @@ class HearThereOSCVizApp : public ofBaseApp{
         ofQuaternion orientation;
         ofQuaternion correction;
         ofxOscReceiver oscReceiver;
-        ofCamera cam;
-        ofLight light1;
-        ofLight light2;
+        ofEasyCam cam;
+        ofLight lights[8];
         bool displayAxes;
         bool displayRaw;
         bool displayRemoteCooked;
         bool displayLocalCooked;
+        static const float axisAlpha = 128;
+        static const float arrowHeadSize = 0.1;
+        static const ofMatrix4x4 worldTransform;
+        static const ofMatrix4x4 bodyTransform;
 };
